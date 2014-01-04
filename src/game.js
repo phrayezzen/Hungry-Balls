@@ -1,6 +1,6 @@
 var colors = ['red','orange','yellow','green','blue','indigo','purple'];
-var WIDTH = 600;
-var HEIGHT = 400;
+var WIDTH = 750;
+var HEIGHT = 500;
 var left = right = up = down = false;
 var RADIUS = 5;
 var t = 0;
@@ -11,7 +11,7 @@ var score, level, mark, count, ouch, pause;
 var stage, player;
 
 function init() {
-	//Create a stage by getting a reference to the canvas
+    //Create a stage by getting a reference to the canvas
     stage = new createjs.Stage("gameCanvas");
     //Create a Shape DisplayObject.
     player = new createjs.Shape();
@@ -33,7 +33,9 @@ function draw() {
     for (var i=0; i<balls.length; i++) {
         var b = balls[i];
         b.x += b.vel;
-        if (b.x > WIDTH + b.rad || b.x < 0 - b.rad) {
+        stage.update();
+        if (b.x > WIDTH + b.rad || b.x < -WIDTH- b.rad) {
+            console.log(b.x);
             stage.removeChild(b);
             balls.remove(b);
         }
@@ -69,19 +71,20 @@ function timer() {
     b.x = [0,WIDTH].choose();
     b.y = Math.random() * HEIGHT;
     b.rad = player.radius * Math.random() * 3;
-    b.graphics.beginFill(colors.choose()).drawCircle(b.x, b.y, b.radius);
+    b.graphics.beginFill(colors.choose()).drawCircle(b.x, b.y, b.rad);
     if (b.x == 0) {
-        b.vel = Math.random() * 5;
+        b.vel = Math.random() * 3 + 2;
     } else {
-        b.vel = Math.random() * -5;
+        b.vel = Math.random() * -3 - 2;
     }
-        
     balls.push(b);
     stage.addChild(b);
-    stage.update();
+
     if (ouch) {
         ouch = false;
     }
+
+    stage.update();
 }
   
 function dist(p,q) {
