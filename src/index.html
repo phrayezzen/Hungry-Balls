@@ -1,0 +1,50 @@
+<!DOCTYPE HTML5>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Hungry Balls</title>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+		<script src="game.js"></script>
+		<script src="easel.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script type="text/javascript">
+        $(document).ready(function () {
+  
+    		$('body').keydown(function(e){
+        		if(e.keyCode==37){
+            		left = true;
+       			}
+		        if(e.keyCode==38){
+		            up = true;
+		        }
+		        if(e.keyCode==39){
+		            right = true;
+		        }
+		        if(e.keyCode==40){
+		            down = true;
+		        }
+		    });
+
+		    $('body').keyup(function(e){
+		        if(e.keyCode==37){
+		            left = false;
+		        }
+		        if(e.keyCode==38){
+		            up = false;
+		        }
+		        if(e.keyCode==39){
+		            right = false;
+		        }
+		        if(e.keyCode==40){
+		            down = false;
+		        }
+		    });
+		});
+        </script>
+	</head>
+	<body onload="init();" style>
+		<div class="canvasContainer">
+			<canvas id="gameCanvas" width="600" height="400">
+		</div>
+	</body>
+</html>
