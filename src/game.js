@@ -2,28 +2,61 @@ var colors = ['red','orange','yellow','green','blue','indigo','purple'];
 var WIDTH = 750;
 var HEIGHT = 500;
 var left = right = up = down = false;
-var RADIUS = 5;
+var pause = false;
+var RADIUS = 10;
 var t = 0;
 var balls = [];
-var gameover = true;
+var lives = [];
+var gameover = false;
+var ouch = false;
 var player, gameover, power, hiscore, howto;
 var score, level, mark, count, ouch, pause;
-var stage, player;
 
 function init() {
     //Create a stage by getting a reference to the canvas
     stage = new createjs.Stage("gameCanvas");
     //Create a Shape DisplayObject.
     player = new createjs.Shape();
-    player.radius = RADIUS;
-    player.graphics.beginFill("gray").drawCircle(0, 0, player.radius);
+    player.rad = RADIUS;
+    player.graphics.beginFill("gray").drawCircle(0, 0, player.rad);
     //Set position of Shape instance.
     player.x = WIDTH / 2;
     player.y = HEIGHT / 2;
     player.velx = player.vely = 0;
     player.accel = .5
+    player.update = function() {
+        var a = player.accel;
+        if (left) {
+            player.velx -= a;
+        }
+        if (up) {
+            player.vely -= a;
+        }
+        if (right) {
+            player.velx += a;
+        }
+        if (down) {
+            player.vely += a;
+        }
+        player.x += player.velx;
+        player.y += player.vely;
+        player.x = player.x.mod(WIDTH);
+        player.y = player.y.mod(HEIGHT);
+        player.velx *= .9;
+        player.vely *= .9;
+    }
+
     //Add Shape instance to stage display list.
     stage.addChild(player);
+
+    for(var i=0; i<7; i++) {
+        var temp = new createjs.Shape();
+        temp.graphics.beginFill(colors[i]).drawCircle(0,0,3);
+        temp.x = (i+1) * 7;
+        temp.y = 10;
+        lives.push(temp);
+        stage.addChild(temp);
+    }
 
     setInterval(timer, 500);
     setInterval(draw, 10);
@@ -31,65 +64,77 @@ function init() {
 
 function draw() {
     for (var i=0; i<balls.length; i++) {
-        var b = balls[i];
-        b.x += b.vel;
-        stage.update();
-        if (b.x > WIDTH + b.rad || b.x < -WIDTH- b.rad) {
-            console.log(b.x);
-            stage.removeChild(b);
-            balls.remove(b);
-        }
+        balls[i].update();
     }
 
-    var a = player.accel;
-    if (left) {
-        player.velx -= a;
+    console.log(lives);
+    if (ouch) {
+        ouch = false;
+        player.endFill();
+        player.beginFill('red');
+        setTimeout(resetColor, 100);
     }
-    if (up) {
-        player.vely -= a;
-    }
-    if (right) {
-        player.velx += a;
-    }
-    if (down) {
-        player.vely += a;
-    }
-    player.x += player.velx;
-    player.y += player.vely;
-    player.x = player.x.mod(WIDTH);
-    player.y = player.y.mod(HEIGHT);
-    player.velx *= .9;
-    player.vely *= .9;
 
+    player.update();
+    stage.update();
+}
+
+function resetColor() {
+    player.endFill();
+    player.beginFill("gray");
     stage.update();
 }
 
 function timer() {
     t += 1;
 
-    var b = new createjs.Shape();
-    b.x = [0,WIDTH].choose();
-    b.y = Math.random() * HEIGHT;
-    b.rad = player.radius * Math.random() * 3;
-    b.graphics.beginFill(colors.choose()).drawCircle(b.x, b.y, b.rad);
-    if (b.x == 0) {
-        b.vel = Math.random() * 3 + 2;
-    } else {
-        b.vel = Math.random() * -3 - 2;
-    }
-    balls.push(b);
-    stage.addChild(b);
-
-    if (ouch) {
-        ouch = false;
+    if (balls.length < 20) {
+        var b = new createjs.Shape();
+        b.x = [0,WIDTH].choose();
+        b.y = Math.random() * HEIGHT;
+        b.rad = player.rad * Math.random() * 2;
+        b.graphics.beginFill(colors.choose()).drawCircle(0, 0, b.rad);
+        if (b.x == 0) {
+            b.vel = Math.random() * 3 + 2;
+        } else {
+            b.vel = Math.random() * -3 - 2;
+        }
+        b.update = updateBall;
+        balls.push(b);
+        stage.addChild(b);
     }
 
     stage.update();
 }
   
 function dist(p,q) {
-    return Math.sqrt(Math.pow((p[0]-q[0]),2) + Math.pow((p[1]-q[1]),2));
+    var a = Math.sqrt(Math.pow((p[0]-q[0]),2) + Math.pow((p[1]-q[1]),2));
+    return a;
 };
+
+function updateBall() {
+    // updates movement
+    this.x += this.vel;
+    if (this.x > WIDTH + this.rad || this.x < -this.rad) {
+        stage.removeChild(this);
+        balls.remove(this);
+    }
+
+    // checks for collision
+    if (dist([this.x, this.y], [player.x, player.y]) < this.rad + player.rad) {
+        if (this.rad > player.rad) {
+            var temp = lives.pop();
+            stage.removeChild(temp);
+            ouch = true;
+        } else {
+            player.rad += this.rad / 10;
+            player.graphics.drawCircle(0,0,player.rad);
+            score += this.rad;
+        }
+        balls.remove(this);
+        stage.removeChild(this);        
+    }
+}
 
 Array.prototype.remove = function() {
     var what, a = arguments, L = a.length, ax;
