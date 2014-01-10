@@ -23,6 +23,28 @@
 			        if(e.keyCode==40){
 			            down = true;
 			        }
+			        if(e.keyCode==80){
+			        	pause = !pause;
+			        }
+			        if(e.keyCode==32 && player.hasPower){
+			        	player.hasPower = false;
+			        	player.power.activate();
+			        	if (player.invincible || player.ice || player.molasses || player.show) {
+            				stage.addChildAt(powerBar, stage.getChildIndex(fullness));
+            			}
+			        	stage.removeChild(power);
+			        	player.power = null;
+			        	power = new PowerUp();           
+			        	setTimeout(function() {
+			        		if (player.ice) {
+			        			timerT = setInterval(timer, 500);
+			        		}
+			                player.invincible = player.ice = player.molasses = player.show = false;
+						    powerT = setInterval(spawnPowerUp, 6000);
+						    stage.removeChild(powerBar);
+			                resetPlayer();
+            			}, 6000)
+			        }
 			    });
 
 			    $('body').keyup(function(e){
